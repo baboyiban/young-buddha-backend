@@ -13,6 +13,10 @@ pub fn build(b: *std.Build) void {
         }),
     });
 
+    // sqlite3
+    exe.linkSystemLibrary("sqlite3");
+    exe.linkLibC();
+
     b.installArtifact(exe);
 
     const run_exe = b.addRunArtifact(exe);
