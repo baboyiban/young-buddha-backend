@@ -11,7 +11,12 @@ pub fn main() !void {
     const db_path = "data/dev.db";
 
     // 디렉토리 만들기 (없는 경우)
-    try std.fs.cwd().makeDir("data");
+    std.fs.cwd().makeDir("data") catch |err| {
+        if (err != error.PathAlreadyExists) {
+            return err;
+        }
+        // 디렉토리가 이미 존재하면 무시
+    };
 
     // DB 열기 (sqlite 파일이 없으면 생성)
     const db_handle = try db.open(db_path);
