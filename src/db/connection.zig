@@ -5,7 +5,7 @@ const c = @cImport({
 });
 
 pub const sqlite3 = c.sqlite3;
-pub const sqlite3_stmt = c.qlite3_stmt;
+pub const sqlite3_stmt = c.sqlite3_stmt;
 
 pub const Error = error{
     OpenFailed,
@@ -24,17 +24,17 @@ pub fn open(path: []const u8) !*sqlite3 {
     var db_ptr: ?*sqlite3 = null;
     const rc = c.sqlite3_open(@ptrCast(path_c.ptr), &db_ptr);
     if (rc != c.SQLITE_OK) {
-        if (db_ptr) |db| _ = c.sqlite3_close(db);
+        if (db_ptr) |dbi| _ = c.sqlite3_close(dbi);
         return Error.OpenFailed;
     }
     return db_ptr.?;
 }
 
-pub fn close(db: *sqlite3) void {
-    _ = c.sqlite3_close(db);
+pub fn close(dbh: *sqlite3) void {
+    _ = c.sqlite3_close(dbh);
 }
 
-pub fn exec(db: *sqlite3, sql: []const u8) !void {
+pub fn exec(dbh: *sqlite3, sql: []const u8) !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     const alloc = arena.allocator();
@@ -44,7 +44,7 @@ pub fn exec(db: *sqlite3, sql: []const u8) !void {
 
     var err_msg: ?[*:0]u8 = null;
     const err_msg_ptr: [*c][*c]u8 = @ptrCast(&err_msg);
-    const rc = c.sqlite3_exec(db, @ptrCast(sql_c.ptr), null, null, err_msg_ptr);
+    const rc = c.sqlite3_exec(dbh, @ptrCast(sql_c.ptr), null, null, err_msg_ptr);
     if (rc != c.SQLITE_OK) {
         if (err_msg != null) {
             _ = c.sqlite3_free(err_msg);
@@ -53,7 +53,7 @@ pub fn exec(db: *sqlite3, sql: []const u8) !void {
     }
 }
 
-pub fn execFile(db: *sqlite3, allocator: std.mem.Allocator, path: []const u8) !void {
+pub fn execFile(dbh: *sqlite3, allocator: std.mem.Allocator, path: []const u8) !void {
     var file = try std.fs.cwd().openFile(path, .{});
     defer file.close();
 
@@ -63,5 +63,5 @@ pub fn execFile(db: *sqlite3, allocator: std.mem.Allocator, path: []const u8) !v
 
     _ = try file.readAll(buf);
     const sql = buf[0..stat.size];
-    try exec(db, sql);
+    try exec(dbh, sql);
 }

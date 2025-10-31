@@ -1,6 +1,8 @@
 const std = @import("std");
+const app = @import("../app.zig");
 
-pub fn handleConnection(_: std.mem.Allocator, conn: std.net.Server.Connection) !void {
+pub fn handleConnection(ctx: *app.AppCtx, conn: std.net.Server.Connection) !void {
+    _ = ctx;
     defer conn.stream.close();
 
     var read_buf: [4096]u8 = undefined;
@@ -20,6 +22,7 @@ pub fn handleConnection(_: std.mem.Allocator, conn: std.net.Server.Connection) !
             break;
         };
 
-        try req.respond("Hello, World!", .{});
+        // TODO: 여기에서 req 정보를 보고 간단한 라우팅을 붙일 수 있습니다.
+        try req.respond("Hello from Young Buddha!", .{});
     }
 }
