@@ -15,6 +15,8 @@ pub fn build(b: *std.Build) void {
 
     // sqlite3
     exe.linkSystemLibrary("sqlite3");
+    // hiredis
+    exe.linkSystemLibrary("hiredis");
     exe.linkLibC();
 
     b.installArtifact(exe);
